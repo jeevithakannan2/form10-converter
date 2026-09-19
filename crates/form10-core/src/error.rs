@@ -99,8 +99,6 @@ impl Error for ImportError {
 #[derive(Debug, Clone, PartialEq)]
 pub enum SettingsValidationError {
     InvalidFinancialYear,
-    EmptySocietyName,
-    EmptySocietyCode,
     InvalidRate {
         field: RateField,
         issue: RateValidationIssue,
@@ -112,8 +110,6 @@ impl Display for SettingsValidationError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidFinancialYear => formatter.write_str("Use a year like 2025-26."),
-            Self::EmptySocietyName => formatter.write_str("Enter the society name."),
-            Self::EmptySocietyCode => formatter.write_str("Enter the society code."),
             Self::InvalidRate { field, issue } => match issue {
                 RateValidationIssue::NotANumber => write!(formatter, "Check {field}."),
                 RateValidationIssue::Negative => write!(formatter, "{field} cannot be negative."),

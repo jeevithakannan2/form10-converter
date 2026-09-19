@@ -167,12 +167,6 @@ fn validate_settings(input: SettingsInput) -> Result<Settings, SettingsValidatio
     if !valid_financial_year(&input.financial_year) {
         return Err(SettingsValidationError::InvalidFinancialYear);
     }
-    if input.society.trim().is_empty() {
-        return Err(SettingsValidationError::EmptySocietyName);
-    }
-    if input.society_code.trim().is_empty() {
-        return Err(SettingsValidationError::EmptySocietyCode);
-    }
     if input.new_from_month > 12 {
         return Err(SettingsValidationError::InvalidNewFromMonth(
             input.new_from_month,

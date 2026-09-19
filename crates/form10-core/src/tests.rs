@@ -56,6 +56,29 @@ fn sample_settings_input() -> SettingsInput {
     }
 }
 
+#[test]
+fn summary_allows_missing_society_details() {
+    let source_file = TestFile::new("source-without-society-details", "xlsx");
+    write_source_fixture(source_file.path());
+    let source = ConverterService::new()
+        .import(source_file.path())
+        .expect("source workbook should import");
+    let mut settings = sample_settings_input();
+    settings.dcmpu.clear();
+    settings.district.clear();
+    settings.society.clear();
+    settings.society_code.clear();
+
+    let summary = ConverterService::new()
+        .summarize(&source.data, settings)
+        .expect("society details should be optional");
+
+    assert!(summary.settings.dcmpu.is_empty());
+    assert!(summary.settings.district.is_empty());
+    assert!(summary.settings.society.is_empty());
+    assert!(summary.settings.society_code.is_empty());
+}
+
 fn write_source_fixture(path: &Path) {
     let mut workbook = Workbook::new();
 

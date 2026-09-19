@@ -7,16 +7,16 @@ export type Stage = 1 | 2 | 3;
 
 const defaults: SettingsInput = {
   financialYear: '',
-  dcmpu: '',
-  district: '',
+  dcmpu: 'ERODE',
+  district: 'ERODE',
   society: '',
   societyCode: '',
-  oldMember: '',
-  oldSociety: '',
-  oldUnion: '',
-  newMember: '',
-  newSociety: '',
-  newUnion: '',
+  oldMember: '10',
+  oldSociety: '10',
+  oldUnion: '10',
+  newMember: '1',
+  newSociety: '1',
+  newUnion: '1',
   newFromMonth: 0
 };
 

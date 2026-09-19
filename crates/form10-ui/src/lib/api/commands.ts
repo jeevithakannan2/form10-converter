@@ -48,8 +48,6 @@ const browserCommands = {
   removeSource: async () => undefined,
   summarize: async (settings: SettingsInput) => {
     if (!/^\d{4}-\d{2}$/.test(settings.financialYear)) throw new Error('Use a year like 2025-26.');
-    if (!settings.society.trim()) throw new Error('Enter the society name.');
-    if (!settings.societyCode.trim()) throw new Error('Enter the society code.');
     return mockSummary;
   },
   previewExport: async (_settings: SettingsInput, destination: string) => ({

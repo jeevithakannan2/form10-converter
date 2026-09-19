@@ -65,3 +65,24 @@ jobs:
 
       - name: Build release
         run: npm --prefix crates/form10-ui run tauri build
+
+      - name: Report release artifact sizes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path("target/release")
+          artifacts = []
+          for path in root.rglob("*"):
+              if path.name in {"form10-converter", "form10-converter.exe"} or path.suffix.lower() in {
+                  ".app", ".appimage", ".deb", ".dmg", ".exe", ".msi", ".rpm"
+              }:
+                  artifacts.append(path)
+
+          for path in sorted(artifacts):
+              size = path.stat().st_size if path.is_file() else sum(
+                  child.stat().st_size for child in path.rglob("*") if child.is_file()
+              )
+              print(f"{path}: {size / 1024 / 1024:.2f} MiB")
+          PY

@@ -1,3 +1,10 @@
 [workspace]
 members = ["crates/form10-core", "crates/form10-ui/src-tauri"]
 resolver = "3"
+
+[profile.release]
+opt-level = "z"
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
