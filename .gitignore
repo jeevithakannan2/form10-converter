@@ -1,0 +1,12 @@
+# Rust build output
+/target/
+
+# Generated FORM-10 exports
+/FORM-10-*.xlsx
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
