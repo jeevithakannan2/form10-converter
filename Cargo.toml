@@ -1,3 +1,3 @@
 [workspace]
-members = ["crates/form10-core", "crates/form10-ui"]
+members = ["crates/form10-core", "crates/form10-ui/src-tauri"]
 resolver = "3"

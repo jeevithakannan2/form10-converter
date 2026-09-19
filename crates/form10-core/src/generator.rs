@@ -152,32 +152,40 @@ fn write_sheet(
         )
         .map_err(display_error)?;
 
-    let headers = [
-        "No",
-        "Subscriber\nCode No",
-        "Subscriber\nName",
-        "Member",
-        "Society",
-        "Union",
-        "Penalty",
-        "Date of\nReceipt",
-        "Date of\nRemoval",
-        "APR",
-        "MAY",
-        "JUN",
-        "JUL",
-        "AUG",
-        "SEP",
-        "OCT",
-        "NOV",
-        "DEC",
-        "JAN",
-        "FEB",
-        "MAR",
+    let headers = vec![
+        "No".to_owned(),
+        "Subscriber\nCode No".to_owned(),
+        "Subscriber\nName".to_owned(),
+        format_rate_header(
+            "Member",
+            settings.rates.old_member,
+            settings.rates.new_member,
+        ),
+        format_rate_header(
+            "Society",
+            settings.rates.old_society,
+            settings.rates.new_society,
+        ),
+        format_rate_header("Union", settings.rates.old_union, settings.rates.new_union),
+        "Penalty".to_owned(),
+        "Date of\nReceipt".to_owned(),
+        "Date of\nRemoval".to_owned(),
+        "APR".to_owned(),
+        "MAY".to_owned(),
+        "JUN".to_owned(),
+        "JUL".to_owned(),
+        "AUG".to_owned(),
+        "SEP".to_owned(),
+        "OCT".to_owned(),
+        "NOV".to_owned(),
+        "DEC".to_owned(),
+        "JAN".to_owned(),
+        "FEB".to_owned(),
+        "MAR".to_owned(),
     ];
     for (column, header) in headers.iter().enumerate() {
         worksheet
-            .write_with_format(9, column as u16, *header, &centered_bold)
+            .write_with_format(9, column as u16, header, &centered_bold)
             .map_err(display_error)?;
     }
 
@@ -312,6 +320,18 @@ fn write_metadata(
         .merge_range(row, 3, row, 20, value, value_format)
         .map_err(display_error)?;
     Ok(())
+}
+
+fn format_rate_header(label: &str, old_rate: f64, new_rate: f64) -> String {
+    if old_rate == new_rate {
+        format!("{label}\n{}", format_rate(old_rate))
+    } else {
+        format!(
+            "{label}\n{} / {}",
+            format_rate(old_rate),
+            format_rate(new_rate)
+        )
+    }
 }
 
 fn write_contribution_formula(

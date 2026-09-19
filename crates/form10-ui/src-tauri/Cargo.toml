@@ -1,0 +1,25 @@
+[package]
+name = "form10-ui"
+version = "0.1.0"
+description = "Local FORM-10 workbook converter"
+authors = ["Form 10 Converter"]
+edition = "2024"
+
+[lib]
+name = "form10_ui_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "form10-converter"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+form10-core = { path = "../../form10-core" }
+opener = { version = "0.8", features = ["reveal"] }
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tokio = { version = "1", features = ["sync"] }
