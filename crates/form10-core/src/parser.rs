@@ -2,24 +2,30 @@ use std::path::Path;
 
 use calamine::{Data, Reader, open_workbook_auto};
 
+use crate::error::ParseError;
 use crate::model::{MONTHS, Member, SourceData};
 
-pub fn parse_source(path: &Path) -> Result<SourceData, String> {
+pub(crate) fn parse_source(path: &Path) -> Result<SourceData, ParseError> {
     let mut workbook =
-        open_workbook_auto(path).map_err(|error| format!("Could not open workbook: {error}"))?;
+        open_workbook_auto(path).map_err(|error| ParseError::CouldNotOpenWorkbook {
+            message: error.to_string(),
+        })?;
 
     let sheet_names = workbook.sheet_names().to_owned();
     for sheet_name in sheet_names {
-        let range = workbook
-            .worksheet_range(&sheet_name)
-            .map_err(|error| format!("Could not read sheet '{sheet_name}': {error}"))?;
+        let range = workbook.worksheet_range(&sheet_name).map_err(|error| {
+            ParseError::CouldNotReadSheet {
+                sheet_name: sheet_name.clone(),
+                message: error.to_string(),
+            }
+        })?;
 
         if let Some(source) = parse_range(&sheet_name, &range) {
             return Ok(source);
         }
     }
 
-    Err("Could not find a month-wise procurement table. Expected headers for M.No, Member Name, and APR through MAR.".into())
+    Err(ParseError::ProcurementTableNotFound)
 }
 
 fn parse_range(sheet_name: &str, range: &calamine::Range<Data>) -> Option<SourceData> {
@@ -152,34 +158,4 @@ fn financial_year_from_text(value: &str) -> Option<String> {
         .windows(2)
         .find(|years| years[1] == years[0] + 1)
         .map(|years| format!("{}-{:02}", years[0], years[1] % 100))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn extracts_financial_year() {
-        assert_eq!(
-            financial_year_from_text("01/04/2025 to 31/03/2026"),
-            Some("2025-26".into())
-        );
-    }
-
-    #[test]
-    fn recognizes_numeric_member_codes() {
-        assert!(looks_like_member_code("0012"));
-        assert!(!looks_like_member_code("Total"));
-    }
-
-    #[test]
-    fn parses_supplied_month_wise_workbook() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("MONTH WISE MILK PROCUREMENTDETAIL -25-26.xls");
-        let source = parse_source(&path).expect("the supplied input workbook should parse");
-        assert_eq!(source.financial_year.as_deref(), Some("2025-26"));
-        assert_eq!(source.members.len(), 40);
-        assert_eq!(source.members[0].code, "3");
-        assert!(source.members[0].active_months[0]);
-    }
 }

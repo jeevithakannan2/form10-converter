@@ -1,22 +1,22 @@
-pub const MONTHS: [&str; 12] = [
+pub(crate) const MONTHS: [&str; 12] = [
     "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR",
 ];
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Member {
     pub code: String,
     pub name: String,
     pub active_months: [bool; 12],
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourceData {
     pub sheet_name: String,
     pub members: Vec<Member>,
     pub financial_year: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Rates {
     pub old_member: f64,
     pub old_society: f64,
@@ -28,7 +28,7 @@ pub struct Rates {
     pub new_from_month: u8,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Settings {
     pub financial_year: String,
     pub dcmpu: String,
@@ -38,8 +38,15 @@ pub struct Settings {
     pub rates: Rates,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum ContributionKind {
+    Member,
+    Society,
+    Union,
+}
+
 impl Rates {
-    pub fn contribution(&self, active_months: &[bool; 12], kind: ContributionKind) -> f64 {
+    pub(crate) fn contribution(&self, active_months: &[bool; 12], kind: ContributionKind) -> f64 {
         active_months
             .iter()
             .enumerate()
@@ -58,11 +65,4 @@ impl Rates {
             })
             .sum()
     }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum ContributionKind {
-    Member,
-    Society,
-    Union,
 }

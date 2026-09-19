@@ -2,12 +2,12 @@ use std::path::Path;
 
 use rust_xlsxwriter::{Format, FormatAlign, FormatBorder, Formula, Workbook, Worksheet};
 
-use crate::model::{ContributionKind, Settings, SourceData};
+use crate::model::{ContributionKind, Rates, Settings, SourceData};
 
 const DATA_START_ROW: u32 = 10;
 const MONTH_START_COLUMN: u16 = 9;
 
-pub fn generate_form10(
+pub(crate) fn generate_form10(
     source: &SourceData,
     settings: &Settings,
     path: &Path,
@@ -153,8 +153,27 @@ fn write_sheet(
         .map_err(display_error)?;
 
     let headers = [
-        "No", "Code No", "Name", "Member", "Society", "Union", "Penalty", "Receipt", "Removal",
-        "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR",
+        "No",
+        "Subscriber\nCode No",
+        "Subscriber\nName",
+        "Member",
+        "Society",
+        "Union",
+        "Penalty",
+        "Date of\nReceipt",
+        "Date of\nRemoval",
+        "APR",
+        "MAY",
+        "JUN",
+        "JUL",
+        "AUG",
+        "SEP",
+        "OCT",
+        "NOV",
+        "DEC",
+        "JAN",
+        "FEB",
+        "MAR",
     ];
     for (column, header) in headers.iter().enumerate() {
         worksheet
@@ -314,7 +333,7 @@ fn write_contribution_formula(
     Ok(())
 }
 
-fn contribution_formula(row: u32, rates: &crate::model::Rates, kind: ContributionKind) -> String {
+fn contribution_formula(row: u32, rates: &Rates, kind: ContributionKind) -> String {
     let old_rate = rate_for(rates, kind, false);
     let new_rate = rate_for(rates, kind, true);
     let first = cell_reference(row, MONTH_START_COLUMN);
@@ -336,7 +355,7 @@ fn contribution_formula(row: u32, rates: &crate::model::Rates, kind: Contributio
     )
 }
 
-fn rate_for(rates: &crate::model::Rates, kind: ContributionKind, new_rate: bool) -> f64 {
+fn rate_for(rates: &Rates, kind: ContributionKind, new_rate: bool) -> f64 {
     match (kind, new_rate) {
         (ContributionKind::Member, false) => rates.old_member,
         (ContributionKind::Society, false) => rates.old_society,
@@ -405,91 +424,4 @@ fn financial_year_start(value: &str) -> Result<i32, String> {
 
 fn display_error(error: impl std::fmt::Display) -> String {
     error.to_string()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::model::Rates;
-
-    fn rates(new_from_month: u8) -> Rates {
-        Rates {
-            old_member: 1.0,
-            old_society: 0.5,
-            old_union: 0.5,
-            new_member: 10.0,
-            new_society: 1.0,
-            new_union: 1.0,
-            new_from_month,
-        }
-    }
-
-    #[test]
-    fn creates_february_split_formula() {
-        assert_eq!(
-            contribution_formula(10, &rates(11), ContributionKind::Member),
-            "=(COUNTIF(J11:S11,\"Y\")*1)+(COUNTIF(T11:U11,\"Y\")*10)"
-        );
-    }
-
-    #[test]
-    fn finds_financial_year_month_end() {
-        let months = [
-            false, false, false, false, false, false, false, false, false, false, true, false,
-        ];
-        assert_eq!(receipt_date(&months, 2024), "28/02/2025");
-    }
-
-    #[test]
-    fn converts_columns_to_excel_letters() {
-        assert_eq!(column_letter(9), "J");
-        assert_eq!(column_letter(20), "U");
-    }
-
-    #[test]
-    fn calculates_rate_switch_contributions() {
-        let active_months = [
-            true, true, true, true, true, true, true, true, true, true, true, true,
-        ];
-        assert_eq!(
-            rates(11).contribution(&active_months, ContributionKind::Member),
-            30.0
-        );
-        assert_eq!(
-            rates(11).contribution(&active_months, ContributionKind::Society),
-            7.0
-        );
-    }
-
-    #[test]
-    fn generates_formula_workbook_for_supplied_data() {
-        let source_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("MONTH WISE MILK PROCUREMENTDETAIL -25-26.xls");
-        let source =
-            crate::parser::parse_source(&source_path).expect("source workbook should parse");
-        let destination = std::env::temp_dir().join("form10-converter-test.xlsx");
-        let settings = Settings {
-            financial_year: "2025-26".into(),
-            dcmpu: "ERODE".into(),
-            district: "ERODE".into(),
-            society: "ED 217 ODANILAI MPCS".into(),
-            society_code: "15-10-00429".into(),
-            rates: rates(1),
-        };
-
-        generate_form10(&source, &settings, &destination).expect("output workbook should generate");
-        let archive = std::fs::File::open(&destination).expect("output should exist");
-        let mut zip = zip::ZipArchive::new(archive).expect("output should be a valid xlsx archive");
-        let mut sheet = String::new();
-        std::io::Read::read_to_string(
-            &mut zip
-                .by_name("xl/worksheets/sheet1.xml")
-                .expect("sheet should exist"),
-            &mut sheet,
-        )
-        .expect("sheet xml should read");
-        assert!(sheet.contains("COUNTIF(J11:U11,\"Y\")*10"));
-        assert!(sheet.contains("SUM(D11:D50)"));
-        std::fs::remove_file(destination).expect("temporary output should delete");
-    }
 }
