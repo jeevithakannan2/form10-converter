@@ -31,8 +31,8 @@ const RATE_START_OPTIONS: [RateStart; 13] = [
     RateStart::March,
 ];
 
-const WIDE_BREAKPOINT: f32 = 760.0;
-const CONTENT_WIDTH: f32 = 1080.0;
+const WIDE_BREAKPOINT: f32 = 820.0;
+const CONTENT_WIDTH: f32 = 1040.0;
 
 pub fn run() -> iced::Result {
     iced::application(App::new, update, view::view)
@@ -80,10 +80,10 @@ fn theme(app: &App) -> Theme {
         Appearance::Light => Theme::custom(
             "Form 10 Light",
             iced::theme::Palette {
-                background: Color::from_rgb8(246, 245, 239),
-                text: Color::from_rgb8(24, 35, 29),
-                primary: Color::from_rgb8(21, 122, 84),
-                success: Color::from_rgb8(21, 128, 61),
+                background: Color::from_rgb8(247, 248, 247),
+                text: Color::from_rgb8(24, 32, 28),
+                primary: Color::from_rgb8(24, 119, 83),
+                success: Color::from_rgb8(22, 128, 75),
                 warning: Color::from_rgb8(180, 83, 9),
                 danger: Color::from_rgb8(190, 45, 45),
             },
@@ -91,9 +91,9 @@ fn theme(app: &App) -> Theme {
         Appearance::Dark => Theme::custom(
             "Form 10 Dark",
             iced::theme::Palette {
-                background: Color::from_rgb8(15, 21, 18),
-                text: Color::from_rgb8(239, 243, 237),
-                primary: Color::from_rgb8(72, 205, 148),
+                background: Color::from_rgb8(16, 20, 18),
+                text: Color::from_rgb8(239, 243, 241),
+                primary: Color::from_rgb8(75, 210, 153),
                 success: Color::from_rgb8(74, 222, 128),
                 warning: Color::from_rgb8(251, 191, 36),
                 danger: Color::from_rgb8(248, 113, 113),

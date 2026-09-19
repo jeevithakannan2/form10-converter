@@ -23,7 +23,7 @@ fn source_strip(source: &ImportedSource) -> Element<'_, Message> {
 
 fn section_title<'a>(title: &'a str, subtitle: &'a str) -> Element<'a, Message> {
     column![
-        heading(title, 28),
+        heading(title, 26),
         text(subtitle).size(14).style(text_muted),
     ]
     .spacing(4)
@@ -210,32 +210,6 @@ fn status_pill(label: &str, success: bool) -> Element<'_, Message> {
         .into()
 }
 
-fn conversion_node<'a>(
-    icon_data: &'static str,
-    label: &'a str,
-    value: &'a str,
-) -> Element<'a, Message> {
-    container(
-        column![
-            icon(icon_data, 26, icon_on_accent),
-            text(label)
-                .size(10)
-                .font(font(Weight::Bold))
-                .style(text_on_accent_muted),
-            text(value)
-                .size(16)
-                .font(font(Weight::Semibold))
-                .style(text_on_accent),
-        ]
-        .spacing(7)
-        .align_x(iced::Alignment::Center),
-    )
-    .width(190)
-    .padding(18)
-    .style(accent_inset_style)
-    .into()
-}
-
 fn missing_source() -> Element<'static, Message> {
     container(
         column![
@@ -266,8 +240,8 @@ fn primary_action<'a>(
         .align_y(iced::Alignment::Center),
     )
     .on_press_maybe(message)
-    .height(46)
-    .padding([0, 18])
+    .height(42)
+    .padding([0, 16])
     .style(primary_button)
     .into()
 }
@@ -290,8 +264,8 @@ fn secondary_action<'a>(
         .align_y(iced::Alignment::Center),
     )
     .on_press_maybe(message)
-    .height(46)
-    .padding([0, 16])
+    .height(42)
+    .padding([0, 14])
     .style(secondary_button)
     .into()
 }
@@ -310,8 +284,8 @@ fn danger_action<'a>(
         .align_y(iced::Alignment::Center),
     )
     .on_press_maybe(message)
-    .height(46)
-    .padding([0, 16])
+    .height(42)
+    .padding([0, 14])
     .style(danger_button)
     .into()
 }
@@ -347,4 +321,3 @@ fn display_name(path: &Path) -> String {
         .map(|name| name.to_string_lossy().into_owned())
         .unwrap_or_else(|| "Excel file".into())
 }
-

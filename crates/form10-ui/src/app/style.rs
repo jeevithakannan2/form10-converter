@@ -7,7 +7,7 @@ fn is_dark(theme: &Theme) -> bool {
 
 fn surface(theme: &Theme) -> Color {
     if is_dark(theme) {
-        Color::from_rgb8(23, 31, 27)
+        Color::from_rgb8(21, 27, 24)
     } else {
         Color::WHITE
     }
@@ -15,25 +15,25 @@ fn surface(theme: &Theme) -> Color {
 
 fn surface_soft(theme: &Theme) -> Color {
     if is_dark(theme) {
-        Color::from_rgb8(28, 38, 33)
+        Color::from_rgb8(27, 34, 30)
     } else {
-        Color::from_rgb8(241, 244, 239)
+        Color::from_rgb8(243, 246, 244)
     }
 }
 
 fn surface_border(theme: &Theme) -> Color {
     if is_dark(theme) {
-        Color::from_rgb8(54, 68, 61)
+        Color::from_rgb8(49, 59, 54)
     } else {
-        Color::from_rgb8(217, 223, 216)
+        Color::from_rgb8(222, 228, 224)
     }
 }
 
 fn muted(theme: &Theme) -> Color {
     if is_dark(theme) {
-        Color::from_rgb8(167, 181, 173)
+        Color::from_rgb8(163, 174, 168)
     } else {
-        Color::from_rgb8(101, 116, 107)
+        Color::from_rgb8(91, 104, 97)
     }
 }
 
@@ -43,18 +43,14 @@ fn accent(theme: &Theme) -> Color {
 
 fn accent_deep(theme: &Theme) -> Color {
     if is_dark(theme) {
-        Color::from_rgb8(32, 139, 99)
+        Color::from_rgb8(31, 145, 103)
     } else {
-        Color::from_rgb8(17, 105, 72)
+        Color::from_rgb8(18, 103, 71)
     }
 }
 
 pub(super) fn icon_default(theme: &Theme) -> Color {
     theme.palette().text
-}
-
-pub(super) fn icon_muted(theme: &Theme) -> Color {
-    muted(theme)
 }
 
 pub(super) fn icon_accent(theme: &Theme) -> Color {
@@ -77,15 +73,25 @@ pub(super) fn app_background(theme: &Theme) -> container::Style {
     container::Style::default().background(theme.palette().background)
 }
 
+pub(super) fn header_style(theme: &Theme) -> container::Style {
+    container::Style::default()
+        .background(surface(theme))
+        .border(
+            Border::default()
+                .rounded(14)
+                .width(1)
+                .color(surface_border(theme)),
+        )
+}
+
+pub(super) fn divider_style(theme: &Theme) -> container::Style {
+    container::Style::default().background(surface_border(theme))
+}
+
 pub(super) fn mark_style(theme: &Theme) -> container::Style {
     container::Style::default()
         .background(accent_deep(theme))
-        .border(Border::default().rounded(13))
-        .shadow(Shadow {
-            color: Color::from_rgba8(0, 0, 0, if is_dark(theme) { 0.24 } else { 0.13 }),
-            offset: Vector::new(0.0, 4.0),
-            blur_radius: 12.0,
-        })
+        .border(Border::default().rounded(10))
 }
 
 pub(super) fn card_style(theme: &Theme) -> container::Style {
@@ -93,14 +99,14 @@ pub(super) fn card_style(theme: &Theme) -> container::Style {
         .background(surface(theme))
         .border(
             Border::default()
-                .rounded(18)
+                .rounded(14)
                 .width(1)
                 .color(surface_border(theme)),
         )
         .shadow(Shadow {
-            color: Color::from_rgba8(0, 0, 0, if is_dark(theme) { 0.20 } else { 0.055 }),
-            offset: Vector::new(0.0, 8.0),
-            blur_radius: 26.0,
+            color: Color::from_rgba8(0, 0, 0, if is_dark(theme) { 0.16 } else { 0.04 }),
+            offset: Vector::new(0.0, 4.0),
+            blur_radius: 18.0,
         })
 }
 
@@ -109,7 +115,7 @@ pub(super) fn subtle_style(theme: &Theme) -> container::Style {
         .background(surface_soft(theme))
         .border(
             Border::default()
-                .rounded(12)
+                .rounded(10)
                 .width(1)
                 .color(surface_border(theme)),
         )
@@ -123,7 +129,7 @@ pub(super) fn soft_accent_style(theme: &Theme) -> container::Style {
     };
     container::Style::default()
         .background(background)
-        .border(Border::default().rounded(18))
+        .border(Border::default().rounded(10))
 }
 
 pub(super) fn drop_zone_style(theme: &Theme, dragging: bool) -> container::Style {
@@ -140,8 +146,8 @@ pub(super) fn drop_zone_style(theme: &Theme, dragging: bool) -> container::Style
         .background(background)
         .border(
             Border::default()
-                .rounded(22)
-                .width(if dragging { 3 } else { 2 })
+                .rounded(16)
+                .width(if dragging { 2 } else { 1 })
                 .color(if dragging {
                     accent(theme)
                 } else {
@@ -149,27 +155,41 @@ pub(super) fn drop_zone_style(theme: &Theme, dragging: bool) -> container::Style
                 }),
         )
         .shadow(Shadow {
-            color: Color::from_rgba8(0, 0, 0, if is_dark(theme) { 0.18 } else { 0.045 }),
-            offset: Vector::new(0.0, 8.0),
-            blur_radius: 24.0,
+            color: Color::from_rgba8(0, 0, 0, if is_dark(theme) { 0.12 } else { 0.025 }),
+            offset: Vector::new(0.0, 3.0),
+            blur_radius: 14.0,
         })
 }
 
-pub(super) fn accent_panel_style(theme: &Theme) -> container::Style {
+pub(super) fn step_badge_style(theme: &Theme, active: bool, complete: bool) -> container::Style {
+    let color = if active || complete {
+        accent_deep(theme)
+    } else {
+        muted(theme)
+    };
+    let background = if active || complete {
+        Color { a: 0.13, ..color }
+    } else {
+        surface_soft(theme)
+    };
     container::Style::default()
-        .background(accent_deep(theme))
-        .border(Border::default().rounded(20))
+        .background(background)
+        .color(color)
+        .border(Border::default().rounded(99).width(1).color(if active {
+            color
+        } else {
+            surface_border(theme)
+        }))
 }
 
-pub(super) fn accent_inset_style(_: &Theme) -> container::Style {
-    container::Style::default()
-        .background(Color::from_rgba8(255, 255, 255, 0.11))
-        .border(
-            Border::default()
-                .rounded(15)
-                .width(1)
-                .color(Color::from_rgba8(255, 255, 255, 0.24)),
-        )
+pub(super) fn step_text_style(theme: &Theme, emphasized: bool) -> text::Style {
+    text::Style {
+        color: Some(if emphasized {
+            theme.palette().text
+        } else {
+            muted(theme)
+        }),
+    }
 }
 
 pub(super) fn success_mark_style(theme: &Theme) -> container::Style {
@@ -190,7 +210,7 @@ pub(super) fn success_panel_style(theme: &Theme) -> container::Style {
     };
     container::Style::default().background(background).border(
         Border::default()
-            .rounded(22)
+            .rounded(14)
             .width(1)
             .color(theme.palette().success),
     )
@@ -210,7 +230,7 @@ pub(super) fn notice_style(theme: &Theme, error: bool) -> container::Style {
     };
     container::Style::default()
         .background(background)
-        .border(Border::default().rounded(12).width(1).color(border))
+        .border(Border::default().rounded(10).width(1).color(border))
 }
 
 pub(super) fn status_pill_style(theme: &Theme, success: bool) -> container::Style {
@@ -249,7 +269,7 @@ pub(super) fn primary_button(theme: &Theme, status: button::Status) -> button::S
     button::Style {
         background: Some(Background::Color(background)),
         text_color: Color::WHITE,
-        border: Border::default().rounded(12),
+        border: Border::default().rounded(10),
         shadow: if matches!(status, button::Status::Hovered) {
             Shadow {
                 color: Color::from_rgba8(0, 0, 0, 0.16),
@@ -277,7 +297,7 @@ pub(super) fn secondary_button(theme: &Theme, status: button::Status) -> button:
             theme.palette().text
         },
         border: Border::default()
-            .rounded(12)
+            .rounded(10)
             .width(1)
             .color(surface_border(theme)),
         shadow: Shadow::default(),
@@ -295,7 +315,7 @@ pub(super) fn danger_button(theme: &Theme, status: button::Status) -> button::St
     button::Style {
         background: Some(Background::Color(background)),
         text_color: color,
-        border: Border::default().rounded(12),
+        border: Border::default().rounded(10),
         shadow: Shadow::default(),
         snap: false,
     }
@@ -306,7 +326,7 @@ pub(super) fn icon_button(theme: &Theme, status: button::Status) -> button::Styl
         background: matches!(status, button::Status::Hovered | button::Status::Pressed)
             .then(|| Background::Color(surface_soft(theme))),
         text_color: theme.palette().text,
-        border: Border::default().rounded(12),
+        border: Border::default().rounded(10),
         shadow: Shadow::default(),
         snap: false,
     }
@@ -322,17 +342,5 @@ pub(super) fn tooltip_style(theme: &Theme) -> container::Style {
 pub(super) fn text_muted(theme: &Theme) -> text::Style {
     text::Style {
         color: Some(muted(theme)),
-    }
-}
-
-pub(super) fn text_on_accent(_: &Theme) -> text::Style {
-    text::Style {
-        color: Some(Color::WHITE),
-    }
-}
-
-pub(super) fn text_on_accent_muted(_: &Theme) -> text::Style {
-    text::Style {
-        color: Some(Color::from_rgb8(206, 235, 221)),
     }
 }

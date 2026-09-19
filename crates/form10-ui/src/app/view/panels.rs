@@ -10,15 +10,17 @@ fn source_step(app: &App, compact: bool) -> Element<'_, Message> {
     if let Some(source) = &app.source {
         let filename = display_name(&source.path);
         let file_identity = row![
-            container(icon(icons::FILE, 28, icon_accent))
-                .width(52)
-                .height(52)
+            container(icon(icons::FILE, 24, icon_accent))
+                .width(44)
+                .height(44)
                 .center_x(Fill)
                 .center_y(Fill)
                 .style(soft_accent_style),
             column![
-                heading_owned(filename, if compact { 18 } else { 21 }),
-                text("Excel workbook").size(12).style(text_muted),
+                heading_owned(filename, if compact { 17 } else { 19 }),
+                text("Excel workbook · ready to convert")
+                    .size(12)
+                    .style(text_muted),
             ]
             .spacing(4)
             .width(Fill),
@@ -36,69 +38,61 @@ fn source_step(app: &App, compact: bool) -> Element<'_, Message> {
         };
         let stats = source_stats(&source.data, compact);
         let actions = source_actions(app, compact);
-        return container(column![file_header, stats, actions].spacing(22))
-            .padding(if compact { 20 } else { 28 })
+        return container(column![file_header, stats, actions].spacing(16))
+            .padding(if compact { 18 } else { 22 })
             .style(card_style)
             .into();
     }
 
     let choose_button = button(
         row![
-            icon(icons::FOLDER, 19, icon_on_accent),
-            text("Choose file").font(font(Weight::Semibold))
+            icon(icons::FOLDER, 18, icon_on_accent),
+            text("Choose Excel file").font(font(Weight::Semibold))
         ]
         .spacing(9)
         .align_y(iced::Alignment::Center),
     )
     .on_press_maybe((!app.is_busy()).then_some(Message::BrowseSource))
-    .padding([13, 21])
+    .padding([11, 18])
     .style(primary_button);
     let (title, subtitle) = if app.dragging_file {
-        ("Release to add file", "Ready to read this workbook")
+        (
+            "Release to import",
+            "We’ll validate the workbook before continuing",
+        )
     } else {
-        ("Drop Excel file", "or choose a file")
+        ("Drop your workbook here", "or select it from your computer")
     };
     let drop_area = container(
         column![
-            container(icon(icons::UPLOAD, 38, icon_accent))
-                .width(76)
-                .height(76)
+            container(icon(icons::UPLOAD, 28, icon_accent))
+                .width(56)
+                .height(56)
                 .center_x(Fill)
                 .center_y(Fill)
                 .style(soft_accent_style),
-            heading(title, if compact { 25 } else { 31 }),
+            heading(title, if compact { 22 } else { 26 }),
             text(subtitle).size(14).style(text_muted),
             choose_button,
-            text(".xls  /  .xlsx").size(12).style(text_muted),
+            text("Excel .xls or .xlsx · processed only on this device")
+                .size(12)
+                .style(text_muted),
         ]
-        .spacing(14)
+        .spacing(12)
         .align_x(iced::Alignment::Center),
     )
     .width(Fill)
-    .padding(if compact { 34 } else { 54 })
+    .padding(if compact { 28 } else { 38 })
     .style(move |theme| drop_zone_style(theme, app.dragging_file));
 
-    let hint = container(
-        row![
-            icon(icons::CONVERT, 19, icon_accent),
-            text("Excel file").size(13),
-            icon(icons::ARROW_RIGHT, 17, icon_muted),
-            text("FORM-10 workbook")
-                .size(13)
-                .font(font(Weight::Semibold)),
-        ]
-        .spacing(9)
-        .align_y(iced::Alignment::Center),
-    )
-    .padding([11, 14])
-    .style(subtle_style);
-
     column![
-        section_title("Select file", "Start with the month-wise Excel file."),
+        section_title(
+            "Import workbook",
+            "Select the month-wise Excel file to begin."
+        ),
         drop_area,
-        container(hint).width(Fill).center_x(Fill),
     ]
-    .spacing(18)
+    .spacing(14)
     .into()
 }
 
@@ -176,49 +170,31 @@ fn settings_step(app: &App, compact: bool) -> Element<'_, Message> {
         ]
         .spacing(15),
     )
-    .padding(if compact { 19 } else { 24 })
+    .width(Fill)
+    .padding(if compact { 19 } else { 22 })
     .style(card_style);
 
-    let rates: Element<'_, Message> = if compact {
-        column![
-            rate_group(
-                "Old rates",
-                &app.old_member,
-                &app.old_society,
-                &app.old_union
-            ),
-            rate_group(
-                "New rates",
-                &app.new_member,
-                &app.new_society,
-                &app.new_union
-            ),
-        ]
-        .spacing(14)
-        .into()
-    } else {
-        row![
-            rate_group(
-                "Old rates",
-                &app.old_member,
-                &app.old_society,
-                &app.old_union
-            ),
-            rate_group(
-                "New rates",
-                &app.new_member,
-                &app.new_society,
-                &app.new_union
-            ),
-        ]
-        .spacing(14)
-        .into()
-    };
+    let rates: Element<'_, Message> = column![
+        rate_group(
+            "Old rates",
+            &app.old_member,
+            &app.old_society,
+            &app.old_union
+        ),
+        rate_group(
+            "New rates",
+            &app.new_member,
+            &app.new_society,
+            &app.new_union
+        ),
+    ]
+    .spacing(10)
+    .into();
     let rate_card = container(
         column![
             card_heading(icons::DETAILS, "Rates"),
             column![
-                text("New rates").size(12).style(text_muted),
+                text("Apply new rates from").size(12).style(text_muted),
                 pick_list(
                     RATE_START_OPTIONS,
                     Some(app.new_from),
@@ -231,18 +207,26 @@ fn settings_step(app: &App, compact: bool) -> Element<'_, Message> {
         ]
         .spacing(15),
     )
-    .padding(if compact { 19 } else { 24 })
+    .width(Fill)
+    .padding(if compact { 19 } else { 22 })
     .style(card_style);
 
     let validation = match app.summary() {
         Ok(_) => validation_line(true, "Details ready"),
         Err(error) => validation_line(false, error),
     };
+    let details_cards: Element<'_, Message> = if compact {
+        column![society_card, rate_card].spacing(14).into()
+    } else {
+        row![society_card, rate_card].spacing(14).into()
+    };
     column![
-        section_title("Details & rates", "Changes update the conversion preview below."),
+        section_title(
+            "Review details",
+            "Confirm the imported data and contribution rates."
+        ),
         source_strip(source),
-        society_card,
-        rate_card,
+        details_cards,
         validation,
     ]
     .spacing(16)
@@ -263,30 +247,6 @@ fn export_step(app: &App, compact: bool) -> Element<'_, Message> {
     if let Some(path) = app.output_path.as_deref() {
         return success_view(path, &source.data, compact);
     }
-
-    let conversion_content: Element<'_, Message> = if compact {
-        column![
-            conversion_node(icons::FILE, "SOURCE", "Excel file"),
-            icon(icons::CONVERT, 25, icon_accent),
-            conversion_node(icons::SAVE, "OUTPUT", "FORM-10.xlsx"),
-        ]
-        .spacing(15)
-        .align_x(iced::Alignment::Center)
-        .into()
-    } else {
-        row![
-            conversion_node(icons::FILE, "SOURCE", "Excel file"),
-            icon(icons::ARROW_RIGHT, 30, icon_accent),
-            conversion_node(icons::SAVE, "OUTPUT", "FORM-10.xlsx"),
-        ]
-        .spacing(22)
-        .align_y(iced::Alignment::Center)
-        .into()
-    };
-    let conversion = container(conversion_content)
-        .width(Fill)
-        .padding(if compact { 24 } else { 34 })
-        .style(accent_panel_style);
 
     let summary = app.summary();
     let valid = summary.is_ok();
@@ -346,7 +306,7 @@ fn export_step(app: &App, compact: bool) -> Element<'_, Message> {
         if matches!(app.operation, Operation::ChoosingOutput) {
             "Choose location..."
         } else {
-            "Convert"
+            "Convert and save"
         },
         icons::CONVERT,
         (valid && !app.is_busy()).then_some(Message::ChooseOutput),
@@ -360,11 +320,32 @@ fn export_step(app: &App, compact: bool) -> Element<'_, Message> {
             .into()
     };
 
+    let output_header = row![
+        container(icon(icons::SAVE, 21, icon_accent))
+            .width(42)
+            .height(42)
+            .center_x(Fill)
+            .center_y(Fill)
+            .style(soft_accent_style),
+        column![
+            text("OUTPUT WORKBOOK")
+                .size(10)
+                .font(font(Weight::Bold))
+                .style(text_muted),
+            text("FORM-10.xlsx").size(16).font(font(Weight::Semibold)),
+        ]
+        .spacing(2),
+    ]
+    .spacing(11)
+    .align_y(iced::Alignment::Center);
+
     column![
-        section_title("Preview & export", "Review the summary, then choose where to save."),
-        conversion,
-        container(column![metrics, validation, actions].spacing(20))
-            .padding(if compact { 20 } else { 26 })
+        section_title(
+            "Export FORM-10",
+            "Review the summary and choose where to save the workbook."
+        ),
+        container(column![output_header, metrics, validation, actions].spacing(18))
+            .padding(if compact { 20 } else { 24 })
             .style(card_style),
     ]
     .spacing(17)
@@ -453,4 +434,3 @@ fn busy_card<'a>(
     .style(card_style)
     .into()
 }
-
