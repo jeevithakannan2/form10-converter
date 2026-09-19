@@ -64,7 +64,7 @@ impl Display for ParseError {
                 message,
             } => write!(formatter, "Could not read sheet '{sheet_name}': {message}"),
             Self::ProcurementTableNotFound => formatter.write_str(
-                "Could not find a month-wise procurement table. Expected headers for M.No, Member Name, and APR through MAR.",
+                "Could not find a month-wise procurement table. Expected headers for M.No, Member Name, and at least one month from APR through MAR.",
             ),
         }
     }

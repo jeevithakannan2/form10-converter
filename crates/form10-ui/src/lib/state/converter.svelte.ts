@@ -6,18 +6,18 @@ export type Operation = 'idle' | 'importing' | 'choosing-output' | 'exporting';
 export type Stage = 1 | 2 | 3;
 
 const defaults: SettingsInput = {
-  financialYear: '2025-26',
-  dcmpu: 'ERODE',
-  district: 'ERODE',
-  society: 'ED 217 ODANILAI MPCS',
-  societyCode: '15-10-00429',
-  oldMember: '1',
-  oldSociety: '0.5',
-  oldUnion: '0.5',
-  newMember: '10',
-  newSociety: '1',
-  newUnion: '1',
-  newFromMonth: 1
+  financialYear: '',
+  dcmpu: '',
+  district: '',
+  society: '',
+  societyCode: '',
+  oldMember: '',
+  oldSociety: '',
+  oldUnion: '',
+  newMember: '',
+  newSociety: '',
+  newUnion: '',
+  newFromMonth: 0
 };
 
 export class ConverterStore {
@@ -80,6 +80,10 @@ export class ConverterStore {
       const source = await commands.importSource(path);
       this.source = source;
       if (source.financialYear) this.settings.financialYear = source.financialYear;
+      if (source.dcmpu) this.settings.dcmpu = source.dcmpu;
+      if (source.district) this.settings.district = source.district;
+      if (source.society) this.settings.society = source.society;
+      if (source.societyCode) this.settings.societyCode = source.societyCode;
       await this.refreshSummary();
       if (!isTauri()) {
         this.notice = 'Browser preview mode uses sample conversion data. Run the Tauri desktop app to validate and convert this workbook.';

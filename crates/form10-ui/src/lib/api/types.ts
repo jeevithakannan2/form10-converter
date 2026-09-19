@@ -18,6 +18,12 @@ export interface SourceInfo {
   fileName: string;
   sheetName: string;
   financialYear: string | null;
+  reportingPeriod: string | null;
+  reportingMonths: string;
+  dcmpu: string | null;
+  district: string | null;
+  society: string | null;
+  societyCode: string | null;
   memberCount: number;
 }
 

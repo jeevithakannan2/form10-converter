@@ -46,6 +46,12 @@ pub struct SourceInfoDto {
     pub file_name: String,
     pub sheet_name: String,
     pub financial_year: Option<String>,
+    pub reporting_period: Option<String>,
+    pub reporting_months: String,
+    pub dcmpu: Option<String>,
+    pub district: Option<String>,
+    pub society: Option<String>,
+    pub society_code: Option<String>,
     pub member_count: usize,
 }
 
@@ -61,6 +67,30 @@ impl From<&ImportedSource> for SourceInfoDto {
                 .to_owned(),
             sheet_name: source.data.sheet_name.clone(),
             financial_year: source.data.financial_year.clone(),
+            reporting_period: source
+                .data
+                .reporting_period
+                .as_ref()
+                .map(|period| format!("{} to {}", period.start, period.end)),
+            reporting_months: source
+                .data
+                .reporting_months
+                .iter()
+                .enumerate()
+                .filter_map(|(month, included)| {
+                    included.then_some(
+                        [
+                            "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN",
+                            "FEB", "MAR",
+                        ][month],
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join(", "),
+            dcmpu: source.data.dcmpu.clone(),
+            district: source.data.district.clone(),
+            society: source.data.society.clone(),
+            society_code: source.data.society_code.clone(),
             member_count: source.data.members.len(),
         }
     }

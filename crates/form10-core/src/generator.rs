@@ -87,7 +87,7 @@ fn write_sheet(
         .merge_range(2, 0, 2, 20, "Personal Details of Subscriber", &subtitle)
         .map_err(display_error)?;
     worksheet
-        .merge_range(3, 0, 3, 20, &settings.financial_year, &subtitle)
+        .merge_range(3, 0, 3, 20, &period_label(source, settings), &subtitle)
         .map_err(display_error)?;
 
     write_metadata(
@@ -205,7 +205,7 @@ fn write_sheet(
             worksheet,
             row,
             3,
-            member.active_months,
+            source.active_months_for(member),
             settings,
             ContributionKind::Member,
             &centered,
@@ -214,7 +214,7 @@ fn write_sheet(
             worksheet,
             row,
             4,
-            member.active_months,
+            source.active_months_for(member),
             settings,
             ContributionKind::Society,
             &centered,
@@ -223,7 +223,7 @@ fn write_sheet(
             worksheet,
             row,
             5,
-            member.active_months,
+            source.active_months_for(member),
             settings,
             ContributionKind::Union,
             &centered,
@@ -235,7 +235,7 @@ fn write_sheet(
             .write_with_format(
                 row,
                 7,
-                receipt_date(&member.active_months, start_year),
+                receipt_date(&source.active_months_for(member), start_year),
                 &centered,
             )
             .map_err(display_error)?;
@@ -243,7 +243,7 @@ fn write_sheet(
             .write_blank(row, 8, &centered)
             .map_err(display_error)?;
 
-        for (month, active) in member.active_months.iter().enumerate() {
+        for (month, active) in source.active_months_for(member).iter().enumerate() {
             if *active {
                 worksheet
                     .write_with_format(row, MONTH_START_COLUMN + month as u16, "Y", &centered)
@@ -273,13 +273,13 @@ fn write_sheet(
             .map(|member| match column {
                 3 => settings
                     .rates
-                    .contribution(&member.active_months, ContributionKind::Member),
+                    .contribution(&source.active_months_for(member), ContributionKind::Member),
                 4 => settings
                     .rates
-                    .contribution(&member.active_months, ContributionKind::Society),
+                    .contribution(&source.active_months_for(member), ContributionKind::Society),
                 5 => settings
                     .rates
-                    .contribution(&member.active_months, ContributionKind::Union),
+                    .contribution(&source.active_months_for(member), ContributionKind::Union),
                 _ => unreachable!(),
             })
             .sum();
@@ -332,6 +332,14 @@ fn format_rate_header(label: &str, old_rate: f64, new_rate: f64) -> String {
             format_rate(new_rate)
         )
     }
+}
+
+fn period_label(source: &SourceData, settings: &Settings) -> String {
+    source
+        .reporting_period
+        .as_ref()
+        .map(|period| format!("{} to {}", period.start, period.end))
+        .unwrap_or_else(|| settings.financial_year.clone())
 }
 
 fn write_contribution_formula(

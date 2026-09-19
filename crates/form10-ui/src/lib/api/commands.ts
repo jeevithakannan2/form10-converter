@@ -9,6 +9,12 @@ const mockSource: SourceInfo = {
   fileName: 'Milk-procurement.xlsx',
   sheetName: 'Procurement',
   financialYear: '2025-26',
+  reportingPeriod: '01/04/2025 to 31/03/2026',
+  reportingMonths: 'APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC, JAN, FEB, MAR',
+  dcmpu: 'ERODE',
+  district: 'ERODE',
+  society: 'ED 217 ODANILAI MPCS',
+  societyCode: '15-10-00429',
   memberCount: 48
 };
 

@@ -83,8 +83,8 @@ impl ConverterService {
             .members
             .iter()
             .map(|member| {
-                member
-                    .active_months
+                source
+                    .active_months_for(member)
                     .iter()
                     .filter(|active| **active)
                     .count()
@@ -94,7 +94,11 @@ impl ConverterService {
             source
                 .members
                 .iter()
-                .map(|member| settings.rates.contribution(&member.active_months, kind))
+                .map(|member| {
+                    settings
+                        .rates
+                        .contribution(&source.active_months_for(member), kind)
+                })
                 .sum()
         };
 

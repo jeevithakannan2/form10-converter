@@ -77,6 +77,18 @@ fn write_source_fixture(path: &Path) {
         sheet
             .write_string(0, 0, "MONTH WISE PROCUREMENT 01/04/2025 to 31/03/2026")
             .expect("financial year text should write");
+        sheet
+            .write_string(1, 0, "DCMPU: ERODE")
+            .expect("dcmpu should write");
+        sheet
+            .write_string(1, 4, "District: ERODE")
+            .expect("district should write");
+        sheet
+            .write_string(1, 8, "Society: ED 217 ODANILAI MPCS")
+            .expect("society should write");
+        sheet
+            .write_string(1, 12, "Society Code: 15-10-00429")
+            .expect("society code should write");
 
         let headers = [
             "M.No",
@@ -134,6 +146,39 @@ fn write_source_fixture(path: &Path) {
     workbook.save(path).expect("fixture workbook should save");
 }
 
+fn write_partial_source_fixture(path: &Path, months: &[&str], period: &str) {
+    let mut workbook = Workbook::new();
+    let sheet = workbook.add_worksheet();
+    sheet
+        .set_name("Procurement")
+        .expect("source sheet name should be valid");
+    sheet
+        .write_string(0, 0, period)
+        .expect("financial year text should write");
+
+    for (column, header) in ["M.No", "Member Name"]
+        .iter()
+        .chain(months.iter())
+        .enumerate()
+    {
+        sheet
+            .write_string(2, column as u16, *header)
+            .expect("header should write");
+    }
+
+    sheet.write_number(3, 0, 3).expect("code should write");
+    sheet
+        .write_string(3, 1, "Arun")
+        .expect("member name should write");
+    for column in 0..months.len() {
+        sheet
+            .write_number(3, (column + 2) as u16, 1)
+            .expect("active month should write");
+    }
+
+    workbook.save(path).expect("fixture workbook should save");
+}
+
 fn read_zip_entry(path: &Path, entry_name: &str) -> String {
     let archive = fs::File::open(path).expect("output workbook should exist");
     let mut zip = ZipArchive::new(archive).expect("output should be a valid xlsx archive");
@@ -154,12 +199,136 @@ fn parser_reads_generated_source_workbook() {
 
     assert_eq!(source.sheet_name, "Procurement");
     assert_eq!(source.financial_year.as_deref(), Some("2025-26"));
+    assert_eq!(
+        source
+            .reporting_period
+            .as_ref()
+            .map(|period| (&period.start, &period.end)),
+        Some((&"01/04/2025".to_owned(), &"31/03/2026".to_owned()))
+    );
+    assert!(source.reporting_months.iter().all(|month| *month));
+    assert_eq!(source.dcmpu.as_deref(), Some("ERODE"));
+    assert_eq!(source.district.as_deref(), Some("ERODE"));
+    assert_eq!(source.society.as_deref(), Some("ED 217 ODANILAI MPCS"));
+    assert_eq!(source.society_code.as_deref(), Some("15-10-00429"));
     assert_eq!(source.members.len(), 2);
     assert_eq!(source.members[0].code, "3");
     assert!(source.members[0].active_months.iter().all(|active| *active));
     assert_eq!(source.members[1].name, "Banu");
     assert!(source.members[1].active_months[0]);
     assert!(!source.members[1].active_months[1]);
+}
+
+#[test]
+fn parser_detects_society_name_from_an_unlabelled_title() {
+    let source_file = TestFile::new("society-title-source", "xlsx");
+
+    let mut workbook = Workbook::new();
+    let sheet = workbook.add_worksheet();
+    sheet
+        .write_string(0, 0, "ED1288 CHILLANKATTUPUDUR MPCS LTD.,")
+        .expect("society title should write");
+    sheet
+        .write_string(
+            1,
+            0,
+            "Month Wise Milk Procurement Details from 01/04/2025 to 31/03/2026",
+        )
+        .expect("financial year should write");
+    for (column, header) in ["M.No", "Member Name", "APR"].iter().enumerate() {
+        sheet
+            .write_string(2, column as u16, *header)
+            .expect("header should write");
+    }
+    sheet.write_number(3, 0, 3).expect("code should write");
+    sheet.write_string(3, 1, "Arun").expect("name should write");
+    sheet.write_number(3, 2, 1).expect("month should write");
+    workbook
+        .save(source_file.path())
+        .expect("workbook should save");
+
+    let source = parse_source(source_file.path()).expect("source workbook should parse");
+
+    assert_eq!(source.financial_year.as_deref(), Some("2025-26"));
+    assert_eq!(
+        source.society.as_deref(),
+        Some("ED1288 CHILLANKATTUPUDUR MPCS LTD.,")
+    );
+}
+
+#[test]
+fn parser_accepts_a_partial_year_with_last_three_month_headers() {
+    let source_file = TestFile::new("partial-source", "xlsx");
+    write_partial_source_fixture(
+        source_file.path(),
+        &["JAN", "FEB", "MAR"],
+        "MONTH WISE PROCUREMENT 01/01/2026 to 31/03/2026",
+    );
+
+    let source = parse_source(source_file.path()).expect("partial source workbook should parse");
+
+    assert_eq!(source.members.len(), 1);
+    assert!(
+        source.members[0].active_months[9..]
+            .iter()
+            .all(|active| *active)
+    );
+    assert!(
+        source.members[0].active_months[..9]
+            .iter()
+            .all(|active| !*active)
+    );
+}
+
+#[test]
+fn summary_counts_only_the_months_present_in_a_partial_year() {
+    let source_file = TestFile::new("partial-summary-source", "xlsx");
+    write_partial_source_fixture(
+        source_file.path(),
+        &["OCT", "NOV", "DEC"],
+        "MONTH WISE PROCUREMENT 01/10/2025 to 31/12/2025",
+    );
+
+    let service = ConverterService::new();
+    let imported = service
+        .import(source_file.path())
+        .expect("partial source workbook should import");
+    let summary = service
+        .summarize(&imported.data, sample_settings_input())
+        .expect("partial source summary should succeed");
+
+    assert_eq!(summary.member_count, 1);
+    assert_eq!(summary.active_subscriptions, 3);
+    assert_eq!(summary.member_contribution, 3.0);
+    assert_eq!(summary.society_contribution, 1.5);
+    assert_eq!(summary.union_contribution, 1.5);
+}
+
+#[test]
+fn parser_uses_the_date_range_to_limit_a_partial_reporting_period() {
+    let source_file = TestFile::new("period-source", "xlsx");
+    write_partial_source_fixture(
+        source_file.path(),
+        &["APR", "MAY", "JUN"],
+        "MONTH WISE PROCUREMENT 01/04/2026 to 30/06/2026",
+    );
+
+    let source = parse_source(source_file.path()).expect("partial source workbook should parse");
+
+    assert_eq!(source.financial_year.as_deref(), Some("2026-27"));
+    assert_eq!(
+        source
+            .reporting_period
+            .as_ref()
+            .map(|period| (&period.start, &period.end)),
+        Some((&"01/04/2026".to_owned(), &"30/06/2026".to_owned()))
+    );
+    assert_eq!(
+        source.reporting_months,
+        [
+            true, true, true, false, false, false, false, false, false, false, false, false
+        ]
+    );
 }
 
 #[test]
@@ -304,6 +473,6 @@ fn export_generates_expected_workbook() {
     let shared_strings_xml = read_zip_entry(&output_path, "xl/sharedStrings.xml");
     assert!(sheet_xml.contains("(COUNTIF(J11:S11,\"Y\")*1)+(COUNTIF(T11:U11,\"Y\")*10)"));
     assert!(sheet_xml.contains("SUM(D11:D12)"));
-    assert!(shared_strings_xml.contains("2025-26"));
+    assert!(shared_strings_xml.contains("01/04/2025 to 31/03/2026"));
     assert!(shared_strings_xml.contains("ED 217 ODANILAI MPCS"));
 }

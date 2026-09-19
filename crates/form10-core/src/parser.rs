@@ -3,7 +3,7 @@ use std::path::Path;
 use calamine::{Data, Reader, open_workbook_auto};
 
 use crate::error::ParseError;
-use crate::model::{MONTHS, Member, SourceData};
+use crate::model::{MONTHS, Member, ReportingPeriod, SourceData};
 
 pub(crate) fn parse_source(path: &Path) -> Result<SourceData, ParseError> {
     let mut workbook =
@@ -35,9 +35,7 @@ fn parse_range(sheet_name: &str, range: &calamine::Range<Data>) -> Option<Source
         .collect();
 
     let header_index = rows.iter().position(|row| {
-        has_header(row, "APR")
-            && has_header(row, "MAY")
-            && has_header(row, "MAR")
+        MONTHS.iter().any(|month| has_header(row, month))
             && (has_header(row, "M.NO")
                 || has_header(row, "M NO")
                 || has_header(row, "MEMBER NAME"))
@@ -46,9 +44,8 @@ fn parse_range(sheet_name: &str, range: &calamine::Range<Data>) -> Option<Source
     let header = &rows[header_index];
     let member_no_column = find_column(header, &["M.NO", "M NO", "MEMBER NO", "MEMBER NUMBER"])?;
     let name_column = find_column(header, &["MEMBER NAME", "NAME"])?;
-    let month_columns: [usize; 12] = std::array::from_fn(|month| {
-        find_column(header, &[MONTHS[month]]).expect("validated all month headers")
-    });
+    let month_columns: [Option<usize>; 12] =
+        std::array::from_fn(|month| find_column(header, &[MONTHS[month]]));
 
     let mut members = Vec::new();
     for row in rows.iter().skip(header_index + 1) {
@@ -67,7 +64,8 @@ fn parse_range(sheet_name: &str, range: &calamine::Range<Data>) -> Option<Source
         }
 
         let active_months = std::array::from_fn(|month| {
-            row.get(month_columns[month])
+            month_columns[month]
+                .and_then(|column| row.get(column))
                 .and_then(|value| parse_number(value))
                 .is_some_and(|value| value > 0.0)
         });
@@ -81,14 +79,114 @@ fn parse_range(sheet_name: &str, range: &calamine::Range<Data>) -> Option<Source
         }
     }
 
+    let reporting_period = rows
+        .iter()
+        .flatten()
+        .find_map(|cell| reporting_period_from_text(cell));
+    let reporting_months = reporting_period
+        .as_ref()
+        .and_then(months_in_period)
+        .unwrap_or_else(|| std::array::from_fn(|month| month_columns[month].is_some()));
+
     (!members.is_empty()).then(|| SourceData {
         sheet_name: sheet_name.to_owned(),
         members,
-        financial_year: rows
-            .iter()
-            .flat_map(|row| row.iter())
-            .find_map(|cell| financial_year_from_text(cell)),
+        financial_year: reporting_period
+            .as_ref()
+            .and_then(financial_year_from_period)
+            .or_else(|| {
+                rows.iter()
+                    .flatten()
+                    .find_map(|cell| financial_year_from_text(cell))
+            }),
+        reporting_period,
+        reporting_months,
+        dcmpu: labelled_value(&rows, &["DCMPU"]),
+        district: labelled_value(&rows, &["DISTRICT"]),
+        society: labelled_value(&rows, &["SOCIETY NAME", "SOCIETY"])
+            .filter(|value| !normalize(value).starts_with("CODE"))
+            .or_else(|| society_from_title(&rows, header_index)),
+        society_code: labelled_value(&rows, &["SOCIETY CODE", "SOCIETY NO", "SOCIETY NUMBER"]),
     })
+}
+
+fn reporting_period_from_text(value: &str) -> Option<ReportingPeriod> {
+    let dates = dates_from_text(value);
+    (dates.len() >= 2).then(|| ReportingPeriod {
+        start: dates[0].clone(),
+        end: dates[1].clone(),
+    })
+}
+
+fn dates_from_text(value: &str) -> Vec<String> {
+    value
+        .split(|character: char| !character.is_ascii_digit() && character != '/')
+        .filter(|part| valid_date(part))
+        .map(str::to_owned)
+        .collect()
+}
+
+fn valid_date(value: &str) -> bool {
+    let mut parts = value.split('/');
+    let (Some(day), Some(month), Some(year), None) =
+        (parts.next(), parts.next(), parts.next(), parts.next())
+    else {
+        return false;
+    };
+    let (Ok(day), Ok(month), Ok(year)) = (
+        day.parse::<u32>(),
+        month.parse::<u32>(),
+        year.parse::<i32>(),
+    ) else {
+        return false;
+    };
+    (1..=12).contains(&month) && (1..=days_in_month(month, year)).contains(&day)
+}
+
+fn months_in_period(period: &ReportingPeriod) -> Option<[bool; 12]> {
+    let (_, start_month, start_year) = date_parts(&period.start)?;
+    let (_, end_month, end_year) = date_parts(&period.end)?;
+    let start = start_year * 12 + start_month as i32 - 1;
+    let end = end_year * 12 + end_month as i32 - 1;
+    let span = end - start;
+    (0..12).contains(&span).then(|| {
+        let mut months = [false; 12];
+        for offset in 0..=span {
+            let calendar_month = ((start + offset).rem_euclid(12) + 1) as u32;
+            months[fiscal_month_index(calendar_month).expect("calendar month is valid") as usize] =
+                true;
+        }
+        months
+    })
+}
+
+fn financial_year_from_period(period: &ReportingPeriod) -> Option<String> {
+    let (_, month, year) = date_parts(&period.start)?;
+    let start_year = if month >= 4 { year } else { year - 1 };
+    Some(format!("{start_year}-{:02}", (start_year + 1) % 100))
+}
+
+fn date_parts(value: &str) -> Option<(u32, u32, i32)> {
+    let mut parts = value.split('/');
+    Some((
+        parts.next()?.parse().ok()?,
+        parts.next()?.parse().ok()?,
+        parts.next()?.parse().ok()?,
+    ))
+}
+
+fn fiscal_month_index(month: u32) -> Option<i32> {
+    (1..=12).contains(&month).then(|| ((month + 8) % 12) as i32)
+}
+
+fn days_in_month(month: u32, year: i32) -> u32 {
+    match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 if year % 400 == 0 || (year % 4 == 0 && year % 100 != 0) => 29,
+        2 => 28,
+        _ => 0,
+    }
 }
 
 fn cell_text(cell: &Data) -> String {
@@ -158,4 +256,56 @@ fn financial_year_from_text(value: &str) -> Option<String> {
         .windows(2)
         .find(|years| years[1] == years[0] + 1)
         .map(|years| format!("{}-{:02}", years[0], years[1] % 100))
+}
+
+fn labelled_value(rows: &[Vec<String>], labels: &[&str]) -> Option<String> {
+    rows.iter().find_map(|row| {
+        row.iter().enumerate().find_map(|(column, cell)| {
+            labels.iter().find_map(|label| {
+                let value = cell.trim();
+                let matches_label = value
+                    .get(..label.len())
+                    .is_some_and(|prefix| prefix.eq_ignore_ascii_case(label));
+                if !matches_label {
+                    return None;
+                }
+
+                let inline_value = value_after_label(value, label);
+                if !inline_value.is_empty() {
+                    return Some(inline_value);
+                }
+
+                row.iter()
+                    .skip(column + 1)
+                    .map(|value| value.trim())
+                    .find(|value| !value.is_empty())
+                    .map(str::to_owned)
+            })
+        })
+    })
+}
+
+fn value_after_label(value: &str, label: &str) -> String {
+    value
+        .get(label.len()..)
+        .unwrap_or_default()
+        .trim_start_matches(|character: char| {
+            character == ':' || character == '-' || character.is_whitespace()
+        })
+        .trim()
+        .to_owned()
+}
+
+fn society_from_title(rows: &[Vec<String>], header_index: usize) -> Option<String> {
+    rows[..header_index]
+        .iter()
+        .rev()
+        .flatten()
+        .map(|value| value.trim())
+        .find(|value| {
+            !value.is_empty()
+                && financial_year_from_text(value).is_none()
+                && (normalize(value).contains("MPCS") || normalize(value).contains("SOCIETY"))
+        })
+        .map(str::to_owned)
 }

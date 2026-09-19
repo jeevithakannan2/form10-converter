@@ -14,6 +14,24 @@ pub struct SourceData {
     pub sheet_name: String,
     pub members: Vec<Member>,
     pub financial_year: Option<String>,
+    pub reporting_period: Option<ReportingPeriod>,
+    pub reporting_months: [bool; 12],
+    pub dcmpu: Option<String>,
+    pub district: Option<String>,
+    pub society: Option<String>,
+    pub society_code: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReportingPeriod {
+    pub start: String,
+    pub end: String,
+}
+
+impl SourceData {
+    pub fn active_months_for(&self, member: &Member) -> [bool; 12] {
+        std::array::from_fn(|month| self.reporting_months[month] && member.active_months[month])
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -28,7 +28,7 @@
       <span class="status">Ready</span>
       <button class="icon-button" type="button" onclick={onRemove} disabled={busy} aria-label="Remove workbook"><X size={18} /></button>
     </div>
-    <dl class="source-stats"><div><dt>Sheet</dt><dd>{source.sheetName}</dd></div><div><dt>Year</dt><dd>{source.financialYear ?? 'Not detected'}</dd></div><div><dt>Members</dt><dd>{source.memberCount}</dd></div></dl>
+    <dl class="source-stats"><div><dt>Sheet</dt><dd>{source.sheetName}</dd></div><div><dt>Period</dt><dd>{source.reportingPeriod ?? source.financialYear ?? 'Not detected'}</dd></div><div><dt>Months</dt><dd>{source.reportingMonths || 'Not detected'}</dd></div><div><dt>Members</dt><dd>{source.memberCount}</dd></div></dl>
     <button class="text-action" type="button" onclick={onChoose} disabled={busy}>Replace workbook</button>
   {:else}
     <button class:dragging={draggingFile} class="drop-zone" type="button" onclick={onChoose} disabled={busy}>

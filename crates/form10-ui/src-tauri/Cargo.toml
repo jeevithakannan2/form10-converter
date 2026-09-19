@@ -9,6 +9,9 @@ edition = "2024"
 name = "form10_ui_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+
 [[bin]]
 name = "form10-converter"
 path = "src/main.rs"

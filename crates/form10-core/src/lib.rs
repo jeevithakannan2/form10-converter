@@ -8,7 +8,7 @@ pub use error::{
     ExportError, ImportError, ParseError, PreviewError, RateField, RateValidationIssue,
     SettingsValidationError,
 };
-pub use model::{Member, Rates, Settings, SourceData};
+pub use model::{Member, Rates, ReportingPeriod, Settings, SourceData};
 pub use service::{
     ConversionSummary, ConverterService, ExportPreview, ImportedSource, SettingsInput,
 };
