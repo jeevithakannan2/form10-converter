@@ -52,7 +52,8 @@ fn write_sheet(
     worksheet.set_landscape();
     worksheet.set_paper_size(5);
     worksheet.set_print_fit_to_pages(1, 0);
-    worksheet.set_margins(0.25, 0.25, 0.75, 0.75, 0.3, 0.3);
+    worksheet.set_print_center_horizontally(true);
+    worksheet.set_margins(0.5, 0.5, 0.75, 0.75, 0.3, 0.3);
     worksheet.set_column_width(0, 6.0).map_err(display_error)?;
     worksheet.set_column_width(1, 11.0).map_err(display_error)?;
     worksheet.set_column_width(2, 24.0).map_err(display_error)?;
@@ -62,18 +63,9 @@ fn write_sheet(
     worksheet.set_column_width(6, 9.0).map_err(display_error)?;
     worksheet.set_column_width(7, 13.0).map_err(display_error)?;
     worksheet.set_column_width(8, 13.0).map_err(display_error)?;
-    worksheet.set_column_width(9, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(10, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(11, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(12, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(13, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(14, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(15, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(16, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(17, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(18, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(19, 5.5).map_err(display_error)?;
-    worksheet.set_column_width(20, 5.5).map_err(display_error)?;
+    worksheet
+        .set_column_range_width(9, 20, 5.0)
+        .map_err(display_error)?;
 
     worksheet
         .merge_range(0, 0, 0, 20, "FORM-10", &title)

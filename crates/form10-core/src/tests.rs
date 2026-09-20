@@ -496,6 +496,8 @@ fn export_generates_expected_workbook() {
     assert!(sheet_xml.contains("orientation=\"landscape\""));
     assert!(sheet_xml.contains("fitToHeight=\"0\""));
     assert!(sheet_xml.contains("<pageSetUpPr fitToPage=\"1\"/>"));
+    assert!(sheet_xml.contains("<pageMargins left=\"0.5\" right=\"0.5\""));
+    assert!(sheet_xml.contains("<printOptions horizontalCentered=\"1\"/>"));
     assert!(sheet_xml.contains("<mergeCell ref=\"B9:C9\"/>"));
     assert!(sheet_xml.contains("<mergeCell ref=\"H9:I9\"/>"));
     assert!(shared_strings_xml.contains("01/04/2025 to 31/03/2026"));
