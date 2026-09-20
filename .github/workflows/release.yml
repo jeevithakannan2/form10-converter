@@ -80,8 +80,22 @@ jobs:
         with:
           tool: git-cliff
 
+      - name: Check out release branch
+        run: |
+          git fetch origin master
+          git checkout -B master origin/master
+
       - name: Generate release notes
         run: git-cliff --current --strip all --output release-notes.md
+
+      - name: Update changelog
+        run: git-cliff --current --output CHANGELOG.md
+
+      - name: Commit changelog
+        run: |
+          git add CHANGELOG.md
+          git diff --cached --quiet || git commit -m "Update changelog for ${{ github.ref_name }}"
+          git push origin HEAD:master
 
       - uses: actions/download-artifact@v5
         with:

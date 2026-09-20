@@ -2,7 +2,8 @@
 
 All notable changes to Form 10 Converter are documented in this file.
 <!-- git-cliff: end of header -->
-## [Unreleased]
+
+## [v0.1.0] - 2026-09-20
 
 ### Added
 - Add Windows Tauri schema
@@ -16,3 +17,16 @@ All notable changes to Form 10 Converter are documented in this file.
 - Replace Iced UI with Tauri desktop app
 - Support partial procurement reporting periods
 - Improve converter defaults and release builds
+- Generate release notes with git-cliff
+- Remove desktop end-to-end tests
+- Replace deprecated Lucide package
+- Cache Rust builds in CI
+- Configure platform bundle icons
+- Update GitHub actions runtimes
+- Improve rate month selection
+- Refine completion action
+- Cancel superseded workflow runs
+- Publish only release installers
+
+### Fixed
+- Fix CI frontend build ordering
