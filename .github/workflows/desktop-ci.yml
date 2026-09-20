@@ -2,7 +2,19 @@ name: Desktop CI
 
 on:
   push:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'crates/form10-core/**'
+      - 'crates/form10-ui/**'
+      - '.github/workflows/desktop-ci.yml'
   pull_request:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'crates/form10-core/**'
+      - 'crates/form10-ui/**'
+      - '.github/workflows/desktop-ci.yml'
 
 concurrency:
   group: desktop-ci-${{ github.workflow }}-${{ github.ref }}
