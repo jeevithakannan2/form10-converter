@@ -33,6 +33,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm --prefix crates/form10-ui ci
 
+      - name: Build frontend
+        run: npm --prefix crates/form10-ui run build
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
@@ -47,9 +50,6 @@ jobs:
 
       - name: Check frontend
         run: npm --prefix crates/form10-ui run check
-
-      - name: Build frontend
-        run: npm --prefix crates/form10-ui run build
 
       - name: Install Tauri WebDriver dependencies
         if: runner.os == 'Linux'
