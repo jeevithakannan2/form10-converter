@@ -291,16 +291,12 @@ fn parser_accepts_a_partial_year_with_last_three_month_headers() {
     let source = parse_source(source_file.path()).expect("partial source workbook should parse");
 
     assert_eq!(source.members.len(), 1);
-    assert!(
-        source.members[0].active_months[9..]
-            .iter()
-            .all(|active| *active)
-    );
-    assert!(
-        source.members[0].active_months[..9]
-            .iter()
-            .all(|active| !*active)
-    );
+    assert!(source.members[0].active_months[9..]
+        .iter()
+        .all(|active| *active));
+    assert!(source.members[0].active_months[..9]
+        .iter()
+        .all(|active| !*active));
 }
 
 #[test]
@@ -348,9 +344,7 @@ fn parser_uses_the_date_range_to_limit_a_partial_reporting_period() {
     );
     assert_eq!(
         source.reporting_months,
-        [
-            true, true, true, false, false, false, false, false, false, false, false, false
-        ]
+        [true, true, true, false, false, false, false, false, false, false, false, false]
     );
 }
 
@@ -494,10 +488,23 @@ fn export_generates_expected_workbook() {
 
     let sheet_xml = read_zip_entry(&output_path, "xl/worksheets/sheet1.xml");
     let shared_strings_xml = read_zip_entry(&output_path, "xl/sharedStrings.xml");
+    let styles_xml = read_zip_entry(&output_path, "xl/styles.xml");
     assert!(sheet_xml.contains("(COUNTIF(J11:S11,\"Y\")*1)+(COUNTIF(T11:U11,\"Y\")*10)"));
     assert!(sheet_xml.contains("SUM(D11:D12)"));
+    assert!(sheet_xml.contains("<pageSetup"));
+    assert!(sheet_xml.contains("paperSize=\"5\""));
+    assert!(sheet_xml.contains("orientation=\"landscape\""));
+    assert!(sheet_xml.contains("fitToHeight=\"0\""));
+    assert!(sheet_xml.contains("<pageSetUpPr fitToPage=\"1\"/>"));
+    assert!(sheet_xml.contains("<mergeCell ref=\"B9:C9\"/>"));
+    assert!(sheet_xml.contains("<mergeCell ref=\"H9:I9\"/>"));
     assert!(shared_strings_xml.contains("01/04/2025 to 31/03/2026"));
     assert!(shared_strings_xml.contains("ED 217 ODANILAI MPCS"));
+    assert!(shared_strings_xml.contains("Code No"));
+    assert!(shared_strings_xml.contains("Receipt"));
+    assert!(!shared_strings_xml.contains("Subscriber\nCode No"));
+    assert!(!shared_strings_xml.contains("Date of\nReceipt"));
+    assert!(styles_xml.contains("<alignment horizontal=\"left\" vertical=\"center\"/>"));
 }
 
 #[test]

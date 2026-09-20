@@ -38,6 +38,10 @@ fn write_sheet(
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
     let centered_bold = centered.clone().set_bold().set_text_wrap();
+    let left_aligned = Format::new()
+        .set_border(FormatBorder::Thin)
+        .set_align(FormatAlign::Left)
+        .set_align(FormatAlign::VerticalCenter);
     let name_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Left)
@@ -47,6 +51,7 @@ fn write_sheet(
 
     worksheet.set_landscape();
     worksheet.set_paper_size(5);
+    worksheet.set_print_fit_to_pages(1, 0);
     worksheet.set_margins(0.25, 0.25, 0.75, 0.75, 0.3, 0.3);
     worksheet.set_column_width(0, 6.0).map_err(display_error)?;
     worksheet.set_column_width(1, 11.0).map_err(display_error)?;
@@ -95,7 +100,7 @@ fn write_sheet(
         4,
         "NAME OF THE DCMPU",
         &settings.dcmpu,
-        &centered,
+        &left_aligned,
         &name_format,
     )?;
     write_metadata(
@@ -103,7 +108,7 @@ fn write_sheet(
         5,
         "NAME OF THE DISTRICT",
         &settings.district,
-        &centered,
+        &left_aligned,
         &name_format,
     )?;
     write_metadata(
@@ -111,7 +116,7 @@ fn write_sheet(
         6,
         "NAME OF THE SOCIETY",
         &settings.society,
-        &centered,
+        &left_aligned,
         &name_format,
     )?;
     write_metadata(
@@ -119,7 +124,7 @@ fn write_sheet(
         7,
         "CODE NO",
         &settings.society_code,
-        &centered,
+        &left_aligned,
         &name_format,
     )?;
 
@@ -127,19 +132,13 @@ fn write_sheet(
         .write_with_format(8, 0, "S", &centered_bold)
         .map_err(display_error)?;
     worksheet
-        .write_with_format(8, 1, "Subscriber", &centered_bold)
-        .map_err(display_error)?;
-    worksheet
-        .write_with_format(8, 2, "Subscriber", &centered_bold)
+        .merge_range(8, 1, 8, 2, "Subscriber", &centered_bold)
         .map_err(display_error)?;
     worksheet
         .merge_range(8, 3, 8, 6, "Contribution", &centered_bold)
         .map_err(display_error)?;
     worksheet
-        .write_with_format(8, 7, "Date of", &centered_bold)
-        .map_err(display_error)?;
-    worksheet
-        .write_with_format(8, 8, "Date of", &centered_bold)
+        .merge_range(8, 7, 8, 8, "Date of", &centered_bold)
         .map_err(display_error)?;
     worksheet
         .merge_range(
@@ -154,8 +153,8 @@ fn write_sheet(
 
     let headers = vec![
         "No".to_owned(),
-        "Subscriber\nCode No".to_owned(),
-        "Subscriber\nName".to_owned(),
+        "Code No".to_owned(),
+        "Name".to_owned(),
         format_rate_header(
             "Member",
             settings.rates.old_member,
@@ -175,8 +174,8 @@ fn write_sheet(
             settings.rates.new_from_month,
         ),
         "Penalty".to_owned(),
-        "Date of\nReceipt".to_owned(),
-        "Date of\nRemoval".to_owned(),
+        "Receipt".to_owned(),
+        "Removal".to_owned(),
         "APR".to_owned(),
         "MAY".to_owned(),
         "JUN".to_owned(),
