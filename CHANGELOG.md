@@ -2,7 +2,6 @@
 
 All notable changes to Form 10 Converter are documented in this file.
 <!-- git-cliff: end of header -->
-
 ## [v0.1.0] - 2026-09-20
 
 ### Added
@@ -27,6 +26,9 @@ All notable changes to Form 10 Converter are documented in this file.
 - Refine completion action
 - Cancel superseded workflow runs
 - Publish only release installers
+- Update changelog during releases
+- Limit desktop CI triggers
+- Configure release changelog author
 
 ### Fixed
 - Fix CI frontend build ordering
