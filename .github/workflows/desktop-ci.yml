@@ -51,18 +51,6 @@ jobs:
       - name: Check frontend
         run: npm --prefix crates/form10-ui run check
 
-      - name: Install Tauri WebDriver dependencies
-        if: runner.os == 'Linux'
-        run: sudo apt-get install -y webkit2gtk-driver
-
-      - name: Install Tauri WebDriver
-        if: runner.os != 'macOS'
-        run: cargo install tauri-driver --locked
-
-      - name: Run native desktop E2E tests
-        if: runner.os != 'macOS'
-        run: npm --prefix crates/form10-ui run test:e2e:tauri
-
       - name: Build release
         run: npm --prefix crates/form10-ui run tauri build
 

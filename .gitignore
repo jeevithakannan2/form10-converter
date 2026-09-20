@@ -3,8 +3,6 @@
 /crates/form10-ui/node_modules/
 /crates/form10-ui/dist/
 /crates/form10-ui/test-results/
-/crates/form10-ui/playwright-report/
-/crates/form10-ui/.tauri-driver/
 /crates/form10-ui/src-tauri/target/
 
 # Generated FORM-10 exports
