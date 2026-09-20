@@ -1,6 +1,6 @@
 [package]
 name = "form10-ui"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local FORM-10 workbook converter"
 authors = ["Form 10 Converter"]
 edition = "2024"
