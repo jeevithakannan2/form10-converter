@@ -151,7 +151,7 @@
     {/if}
 
     {#if converter.source && converter.stage === 2}
-      <SettingsForm settings={converter.settings} disabled={converter.busy} useOldRates={converter.useOldRates} onChange={changeSetting} onUseOldRates={(value) => converter.setUseOldRates(value)} />
+      <SettingsForm settings={converter.settings} reportingMonthIndices={converter.source.reportingMonthIndices} disabled={converter.busy} useOldRates={converter.useOldRates} onChange={changeSetting} onUseOldRates={(value) => converter.setUseOldRates(value)} />
       <div class="stage-actions"><button class="secondary" type="button" onclick={() => converter.setStage(1)}>Back</button><button class="primary" type="button" onclick={() => converter.setStage(3)} disabled={!converter.summary || converter.busy}>Continue to export</button></div>
     {/if}
 

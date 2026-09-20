@@ -3,13 +3,13 @@
   import { monthOptions } from '$lib/utils/months';
   import { CalendarRange, Landmark, ReceiptText } from '@lucide/svelte';
 
-  let { settings, disabled, useOldRates, onChange, onUseOldRates }: { settings: SettingsInput; disabled: boolean; useOldRates: boolean; onChange: (key: keyof SettingsInput, value: string | number) => void; onUseOldRates: (value: boolean) => void } = $props();
+  let { settings, reportingMonthIndices, disabled, useOldRates, onChange, onUseOldRates }: { settings: SettingsInput; reportingMonthIndices: number[]; disabled: boolean; useOldRates: boolean; onChange: (key: keyof SettingsInput, value: string | number) => void; onUseOldRates: (value: boolean) => void } = $props();
   const update = (event: Event) => {
     const input = event.currentTarget as HTMLInputElement;
     onChange(input.name as keyof SettingsInput, input.value);
   };
   const selectMonth = (value: number) => onChange('newFromMonth', value);
-  let rateStartMonths = $derived(monthOptions(settings.financialYear));
+  let rateStartMonths = $derived(monthOptions(settings.financialYear).filter((month) => reportingMonthIndices.includes(month.value)));
 </script>
 
 <section class="details" aria-labelledby="details-title">

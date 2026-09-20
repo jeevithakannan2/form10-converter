@@ -160,13 +160,20 @@ fn write_sheet(
             "Member",
             settings.rates.old_member,
             settings.rates.new_member,
+            settings.rates.new_from_month,
         ),
         format_rate_header(
             "Society",
             settings.rates.old_society,
             settings.rates.new_society,
+            settings.rates.new_from_month,
         ),
-        format_rate_header("Union", settings.rates.old_union, settings.rates.new_union),
+        format_rate_header(
+            "Union",
+            settings.rates.old_union,
+            settings.rates.new_union,
+            settings.rates.new_from_month,
+        ),
         "Penalty".to_owned(),
         "Date of\nReceipt".to_owned(),
         "Date of\nRemoval".to_owned(),
@@ -322,8 +329,8 @@ fn write_metadata(
     Ok(())
 }
 
-fn format_rate_header(label: &str, old_rate: f64, new_rate: f64) -> String {
-    if old_rate == new_rate {
+fn format_rate_header(label: &str, old_rate: f64, new_rate: f64, new_from_month: u8) -> String {
+    if new_from_month == 0 || old_rate == new_rate {
         format!("{label}\n{}", format_rate(old_rate))
     } else {
         format!(

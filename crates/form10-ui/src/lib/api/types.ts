@@ -20,6 +20,7 @@ export interface SourceInfo {
   financialYear: string | null;
   reportingPeriod: string | null;
   reportingMonths: string;
+  reportingMonthIndices: number[];
   dcmpu: string | null;
   district: string | null;
   society: string | null;

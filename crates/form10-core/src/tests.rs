@@ -499,3 +499,27 @@ fn export_generates_expected_workbook() {
     assert!(shared_strings_xml.contains("01/04/2025 to 31/03/2026"));
     assert!(shared_strings_xml.contains("ED 217 ODANILAI MPCS"));
 }
+
+#[test]
+fn export_shows_only_old_rates_when_new_rates_are_disabled() {
+    let source_file = TestFile::new("old-rates-source", "xlsx");
+    write_source_fixture(source_file.path());
+    let output_file = TestFile::new("old-rates-output", "xlsx");
+    let mut settings = sample_settings_input();
+    settings.new_from_month = 0;
+
+    let service = ConverterService::new();
+    let imported = service
+        .import(source_file.path())
+        .expect("source workbook should import");
+    let preview = service
+        .preview(&imported, settings, output_file.path())
+        .expect("preview should succeed");
+    let output_path = service
+        .export(&imported.data, &preview, true)
+        .expect("export should generate a workbook");
+
+    let shared_strings_xml = read_zip_entry(&output_path, "xl/sharedStrings.xml");
+    assert!(shared_strings_xml.contains("Member\n1"));
+    assert!(!shared_strings_xml.contains("Member\n1 / 10"));
+}

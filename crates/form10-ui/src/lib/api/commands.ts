@@ -11,6 +11,7 @@ const mockSource: SourceInfo = {
   financialYear: '2025-26',
   reportingPeriod: '01/04/2025 to 31/03/2026',
   reportingMonths: 'APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC, JAN, FEB, MAR',
+  reportingMonthIndices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   dcmpu: 'ERODE',
   district: 'ERODE',
   society: 'ED 217 ODANILAI MPCS',

@@ -48,6 +48,7 @@ pub struct SourceInfoDto {
     pub financial_year: Option<String>,
     pub reporting_period: Option<String>,
     pub reporting_months: String,
+    pub reporting_month_indices: Vec<u8>,
     pub dcmpu: Option<String>,
     pub district: Option<String>,
     pub society: Option<String>,
@@ -87,6 +88,13 @@ impl From<&ImportedSource> for SourceInfoDto {
                 })
                 .collect::<Vec<_>>()
                 .join(", "),
+            reporting_month_indices: source
+                .data
+                .reporting_months
+                .iter()
+                .enumerate()
+                .filter_map(|(month, included)| included.then_some((month + 1) as u8))
+                .collect(),
             dcmpu: source.data.dcmpu.clone(),
             district: source.data.district.clone(),
             society: source.data.society.clone(),

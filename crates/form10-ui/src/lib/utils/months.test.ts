@@ -13,4 +13,14 @@ describe('monthOptions', () => {
   it('uses plain month labels until the financial year is valid', () => {
     expect(monthOptions('')[0].short).toBe('Apr');
   });
+
+  it('can be limited to the months parsed from the workbook', () => {
+    const parsedMonths = [10, 11, 12];
+
+    expect(monthOptions('2025-26').filter((month) => parsedMonths.includes(month.value))).toMatchObject([
+      { short: 'JAN-26' },
+      { short: 'FEB-26' },
+      { short: 'MAR-26' }
+    ]);
+  });
 });

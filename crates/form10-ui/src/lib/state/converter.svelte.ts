@@ -12,9 +12,9 @@ const defaults: SettingsInput = {
   society: '',
   societyCode: '',
   oldMember: '10',
-  oldSociety: '10',
-  oldUnion: '10',
-  newMember: '1',
+  oldSociety: '1',
+  oldUnion: '1',
+  newMember: '10',
   newSociety: '1',
   newUnion: '1',
   newFromMonth: 0
@@ -55,7 +55,7 @@ export class ConverterStore {
   }
 
   setUseOldRates(useOldRates: boolean) {
-    this.changeSetting('newFromMonth', useOldRates ? 0 : 1);
+    this.changeSetting('newFromMonth', useOldRates ? 0 : this.source?.reportingMonthIndices[0] ?? 1);
   }
 
   toggleAppearance() {
