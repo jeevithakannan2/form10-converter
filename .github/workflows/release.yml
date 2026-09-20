@@ -63,28 +63,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create release notes from changelog
-        env:
-          TAG: ${{ github.ref_name }}
-        run: |
-          python3 - <<'PY'
-          import os
-          import re
-          from pathlib import Path
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
 
-          tag = os.environ["TAG"]
-          versions = {tag, tag.removeprefix("v")}
-          changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
-          headings = list(re.finditer(r"^## \[(.+?)\].*$", changelog, re.MULTILINE))
-
-          for index, heading in enumerate(headings):
-              if heading.group(1) in versions:
-                  end = headings[index + 1].start() if index + 1 < len(headings) else len(changelog)
-                  Path("release-notes.md").write_text(changelog[heading.start():end].strip() + "\n", encoding="utf-8")
-                  break
-          else:
-              raise SystemExit(f"No changelog entry found for {tag}.")
-          PY
+      - name: Generate release notes
+        run: git-cliff --current --strip all --output release-notes.md
 
       - uses: actions/download-artifact@v4
         with:

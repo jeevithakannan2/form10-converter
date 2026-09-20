@@ -1,0 +1,38 @@
+[changelog]
+header = """
+# Changelog
+
+All notable changes to Form 10 Converter are documented in this file.
+<!-- git-cliff: end of header -->
+"""
+body = """
+{% if version -%}
+## [{{ version }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else -%}
+## [Unreleased]
+{% endif %}
+{% for group, commits in commits | group_by(attribute="group") -%}
+### {{ group }}
+{% for commit in commits -%}
+- {{ commit.message | upper_first }}
+{% endfor %}
+{% endfor -%}
+"""
+trim = true
+render_always = true
+postprocessors = [
+  { pattern = '\n{2,}$', replace = "\n" },
+]
+
+[git]
+conventional_commits = false
+filter_unconventional = false
+tag_pattern = "^v[0-9].*$"
+commit_parsers = [
+  { message = "^[Aa]dd", group = "Added" },
+  { message = "^[Ff]ix", group = "Fixed" },
+  { message = "^[Ii]mprove", group = "Changed" },
+  { message = "^[Rr]eplace", group = "Changed" },
+  { message = ".*", group = "Changed" },
+]
+sort_commits = "oldest"
