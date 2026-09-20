@@ -29,6 +29,8 @@ All notable changes to Form 10 Converter are documented in this file.
 - Update changelog during releases
 - Limit desktop CI triggers
 - Configure release changelog author
+- Update changelog for v0.1.0
+- Use WebView2 bootstrapper for releases
 
 ### Fixed
 - Fix CI frontend build ordering
