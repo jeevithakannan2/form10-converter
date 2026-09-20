@@ -291,12 +291,16 @@ fn parser_accepts_a_partial_year_with_last_three_month_headers() {
     let source = parse_source(source_file.path()).expect("partial source workbook should parse");
 
     assert_eq!(source.members.len(), 1);
-    assert!(source.members[0].active_months[9..]
-        .iter()
-        .all(|active| *active));
-    assert!(source.members[0].active_months[..9]
-        .iter()
-        .all(|active| !*active));
+    assert!(
+        source.members[0].active_months[9..]
+            .iter()
+            .all(|active| *active)
+    );
+    assert!(
+        source.members[0].active_months[..9]
+            .iter()
+            .all(|active| !*active)
+    );
 }
 
 #[test]
@@ -344,7 +348,9 @@ fn parser_uses_the_date_range_to_limit_a_partial_reporting_period() {
     );
     assert_eq!(
         source.reporting_months,
-        [true, true, true, false, false, false, false, false, false, false, false, false]
+        [
+            true, true, true, false, false, false, false, false, false, false, false, false
+        ]
     );
 }
 
