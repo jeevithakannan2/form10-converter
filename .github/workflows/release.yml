@@ -54,11 +54,17 @@ jobs:
         run: npm --prefix crates/form10-ui run tauri build
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact }}
           if-no-files-found: error
-          path: target/release/bundle/**
+          path: |
+            target/release/bundle/**/*.msi
+            target/release/bundle/**/*-setup.exe
+            target/release/bundle/**/*.dmg
+            target/release/bundle/**/*.AppImage
+            target/release/bundle/**/*.deb
+            target/release/bundle/**/*.rpm
 
   publish:
     name: Publish GitHub release
@@ -77,7 +83,7 @@ jobs:
       - name: Generate release notes
         run: git-cliff --current --strip all --output release-notes.md
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           path: release-artifacts
 
