@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Calculator, CalendarDays, CircleAlert, FileOutput, FileSpreadsheet, Hash, Landmark, Moon, ReceiptText, RotateCcw, Sun, X } from '@lucide/svelte';
+  import { Calculator, CalendarDays, CircleAlert, FileOutput, FileSpreadsheet, Hash, Landmark, Moon, ReceiptText, Sun, X } from '@lucide/svelte';
   import ImportPanel from '$lib/components/ImportPanel.svelte';
   import SettingsForm from '$lib/components/SettingsForm.svelte';
   import WorkflowProgress from '$lib/components/WorkflowProgress.svelte';
@@ -161,7 +161,7 @@
         {#if converter.operation === 'exporting'}
           <div class="busy-card"><span class="loader"></span><div><strong>Creating FORM-10</strong><span>Writing the Excel workbook...</span></div></div>
         {:else if converter.outputPath}
-          <div class="success-panel"><span class="success-mark">✓</span><div class="success-copy"><span class="eyebrow">Workbook created</span><h3>FORM-10 is ready</h3><strong>{fileName(converter.outputPath)}</strong><p>{converter.outputPath}</p></div><div class="success-actions"><button class="primary" type="button" onclick={() => converter.openOutput()}>Open file</button><button class="secondary" type="button" onclick={() => converter.openOutput(true)}>Show folder</button><button class="secondary" type="button" onclick={() => converter.startAgain()}><RotateCcw size={16} /> New file</button></div></div>
+          <div class="success-panel"><span class="success-mark">✓</span><div class="success-copy"><span class="eyebrow">Workbook created</span><h3>FORM-10 is ready</h3><strong>{fileName(converter.outputPath)}</strong><p>{converter.outputPath}</p></div><div class="success-actions"><button class="primary" type="button" onclick={() => converter.openOutput()}>Open file</button><button class="secondary" type="button" onclick={() => converter.openOutput(true)}>Show folder</button><button class="secondary" type="button" onclick={() => converter.startAgain()}>Convert another file</button></div></div>
         {:else}
           <div class="export-grid export-review">
             <div class="output-file"><FileOutput size={21} /><div><span>Output workbook</span><strong>FORM-10-{converter.settings.financialYear}.xlsx</strong><small>Excel workbook (.xlsx)</small></div></div>
