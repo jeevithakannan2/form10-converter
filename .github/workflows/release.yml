@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            artifact: windows-installers
+          - name: macOS
+            os: macos-14
+            artifact: macos-installer
+          - name: Linux
+            os: ubuntu-24.04
+            artifact: linux-packages
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: crates/form10-ui/package-lock.json
+
+      - name: Install Linux build libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Install frontend dependencies
+        run: npm --prefix crates/form10-ui ci
+
+      - name: Build installer
+        run: npm --prefix crates/form10-ui run tauri build
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          if-no-files-found: error
+          path: target/release/bundle/**
+
+  publish:
+    name: Publish GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create release notes from changelog
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          tag = os.environ["TAG"]
+          versions = {tag, tag.removeprefix("v")}
+          changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          headings = list(re.finditer(r"^## \[(.+?)\].*$", changelog, re.MULTILINE))
+
+          for index, heading in enumerate(headings):
+              if heading.group(1) in versions:
+                  end = headings[index + 1].start() if index + 1 < len(headings) else len(changelog)
+                  Path("release-notes.md").write_text(changelog[heading.start():end].strip() + "\n", encoding="utf-8")
+                  break
+          else:
+              raise SystemExit(f"No changelog entry found for {tag}.")
+          PY
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          files: release-artifacts/**/*
