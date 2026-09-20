@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FileSpreadsheet, FolderOpen, LoaderCircle, X } from 'lucide-svelte';
+  import { FileSpreadsheet, FolderOpen, LoaderCircle, X } from '@lucide/svelte';
   import type { SourceInfo } from '$lib/api/types';
 
   let {

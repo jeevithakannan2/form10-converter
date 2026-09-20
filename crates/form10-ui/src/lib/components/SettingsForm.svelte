@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { SettingsInput } from '$lib/api/types';
   import { monthOptions } from '$lib/utils/months';
-  import { CalendarRange, Landmark, ReceiptText } from 'lucide-svelte';
+  import { CalendarRange, Landmark, ReceiptText } from '@lucide/svelte';
 
   let { settings, disabled, useOldRates, onChange, onUseOldRates }: { settings: SettingsInput; disabled: boolean; useOldRates: boolean; onChange: (key: keyof SettingsInput, value: string | number) => void; onUseOldRates: (value: boolean) => void } = $props();
   const update = (event: Event) => {

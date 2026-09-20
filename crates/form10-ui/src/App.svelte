@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Calculator, CalendarDays, CircleAlert, FileOutput, FileSpreadsheet, Hash, Landmark, Moon, ReceiptText, RotateCcw, Sun, X } from 'lucide-svelte';
+  import { Calculator, CalendarDays, CircleAlert, FileOutput, FileSpreadsheet, Hash, Landmark, Moon, ReceiptText, RotateCcw, Sun, X } from '@lucide/svelte';
   import ImportPanel from '$lib/components/ImportPanel.svelte';
   import SettingsForm from '$lib/components/SettingsForm.svelte';
   import WorkflowProgress from '$lib/components/WorkflowProgress.svelte';

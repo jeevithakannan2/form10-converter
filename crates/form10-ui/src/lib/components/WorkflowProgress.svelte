@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check } from 'lucide-svelte';
+  import { Check } from '@lucide/svelte';
 
   let { stage, hasSource, hasOutput, onSelect }: { stage: number; hasSource: boolean; hasOutput: boolean; onSelect: (stage: 1 | 2 | 3) => void } = $props();
   const steps = ['Import workbook', 'Review details', 'Export FORM-10'];
