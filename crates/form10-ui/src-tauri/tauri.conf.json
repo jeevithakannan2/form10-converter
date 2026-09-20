@@ -31,8 +31,8 @@
     "icon": ["icons/icon.png", "icons/icon.ico", "icons/icon.icns"],
     "windows": {
       "webviewInstallMode": {
-        "type": "offlineInstaller",
-        "silent": true
+        "type": "downloadBootstrapper",
+        "silent": false
       }
     }
   }
